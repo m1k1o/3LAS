@@ -3,9 +3,6 @@
     https://github.com/JoJoBond/3LAS
 */
 
-import { Logging } from '../util/3las.logging';
-import { isAndroid } from '../util/3las.helpers';
-
 export interface IAudioFormatReader {
     PushData(data: Uint8Array): void;
     SamplesAvailable(): boolean;
@@ -15,9 +12,16 @@ export interface IAudioFormatReader {
     Poke(): void;
 }
 
+// Used to concatenate two Uint8Array (b comes BEHIND a)
+export function ConcatUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
+    let tmp = new Uint8Array(a.length + b.length);
+    tmp.set(a, 0);
+    tmp.set(b, a.length);
+    return tmp;
+}
+
 export abstract class AudioFormatReader implements IAudioFormatReader {
     protected readonly Audio: AudioContext;
-    protected readonly Logger: Logging;
     protected readonly ErrorCallback: () => void;
     protected readonly BeforeDecodeCheck: (length: number) => boolean;
     protected readonly DataReadyCallback: () => void;
@@ -38,7 +42,7 @@ export abstract class AudioFormatReader implements IAudioFormatReader {
     protected DataBuffer: Uint8Array;
 
 
-    constructor(audio: AudioContext, logger: Logging, errorCallback: () => void, beforeDecodeCheck: (length: number) => boolean, dataReadyCallback: () => void) {
+    constructor(audio: AudioContext, errorCallback: () => void, beforeDecodeCheck: (length: number) => boolean, dataReadyCallback: () => void) {
         if (!audio)
             throw new Error('AudioFormatReader: audio must be specified');
 
@@ -53,7 +57,6 @@ export abstract class AudioFormatReader implements IAudioFormatReader {
             throw new Error('AudioFormatReader: dataReadyCallback must be specified');
 
         this.Audio = audio;
-        this.Logger = logger;
         this.ErrorCallback = errorCallback;
         this.BeforeDecodeCheck = beforeDecodeCheck;
         this.DataReadyCallback = dataReadyCallback;
@@ -68,7 +71,7 @@ export abstract class AudioFormatReader implements IAudioFormatReader {
     // Pushes frame data into the buffer
     public PushData(data: Uint8Array): void {
         // Append data to framedata buffer
-        this.DataBuffer = this.ConcatUint8Array(this.DataBuffer, data);
+        this.DataBuffer = ConcatUint8Array(this.DataBuffer, data);
 
         // Try to extract frames
         this.ExtractAll();
@@ -109,8 +112,7 @@ export abstract class AudioFormatReader implements IAudioFormatReader {
     }
 
     // Extracts and converts the raw data 
-    protected ExtractAll(): void {
-    }
+    protected abstract ExtractAll(): void
 
     // Checks if a decode makes sense
     protected OnBeforeDecode(id: number, duration: number): boolean {
@@ -149,76 +151,5 @@ export abstract class AudioFormatReader implements IAudioFormatReader {
             // Is out of order, will be pushed later
             this.BufferStore[id] = audioBuffer;
         }
-    }
-
-    // Used to concatenate two Uint8Array (b comes BEHIND a)
-    protected ConcatUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
-        let tmp = new Uint8Array(a.length + b.length);
-        tmp.set(a, 0);
-        tmp.set(b, a.length);
-        return tmp;
-    }
-
-    public static CanDecodeTypes(mimeTypes: Array<string>): boolean {
-        let audioTag = new Audio();
-        let result: boolean = false;
-        for (let i: number = 0; i < mimeTypes.length; i++) {
-            let mimeType: string = mimeTypes[i];
-
-            let answer: string = audioTag.canPlayType(mimeType);
-            if (answer != "probably" && answer != "maybe")
-                continue;
-
-            result = true;
-            break;
-        }
-
-        audioTag = null;
-        return result;
-    }
-
-    public static DefaultSettings(): Record<string, Record<string, number | boolean>> {
-        let settings: Record<string, Record<string, number | boolean>> = {};
-
-        // WAV
-        settings["wav"] = {};
-
-        // Duration of wave samples to decode together
-        settings["wav"]["BatchDuration"] = 1 / 10; // 0.1 seconds
-        /*
-        if (isAndroid && isNativeChrome)
-            settings["wav"]["BatchDuration"] = 96 / 375;
-        else if (isAndroid && isFirefox)
-            settings["wav"]["BatchDuration"] = 96 / 375;
-        else
-            settings["wav"]["BatchDuration"] = 16 / 375;
-        */
-
-        // Duration of addtional samples to decode to account for edge effects
-        settings["wav"]["ExtraEdgeDuration"] = 1 / 300; // 0.00333... seconds
-        /*
-        if (isAndroid && isNativeChrome)
-            settings["wav"]["ExtraEdgeDuration"] = 1 / 1000;
-        else if (isAndroid && isFirefox)
-            settings["wav"]["ExtraEdgeDuration"] = 1 / 1000;
-        else
-            settings["wav"]["ExtraEdgeDuration"] = 1 / 1000;
-        */
-
-        // MPEG
-        settings["mpeg"] = {};
-
-        // Adds a minimal ID3v2 tag before decoding frames.
-        settings["mpeg"]["AddID3Tag"] = false;
-
-        // Minimum number of frames to decode together
-        // Theoretical minimum is 2.
-        // Recommended value is 3 or higher.
-        if (isAndroid)
-            settings["mpeg"]["MinDecodeFrames"] = 17;
-        else
-            settings["mpeg"]["MinDecodeFrames"] = 3;
-
-        return settings;
     }
 }

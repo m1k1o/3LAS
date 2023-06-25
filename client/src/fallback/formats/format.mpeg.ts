@@ -3,8 +3,7 @@
     https://github.com/JoJoBond/3LAS
 */
 
-import { Logging } from '../../util/3las.logging';
-import { AudioFormatReader, IAudioFormatReader } from '../3las.formatreader';
+import { AudioFormatReader, IAudioFormatReader } from './audioformatreader';
 
 export class MPEGFrameInfo {
     public readonly Data: Uint8Array;
@@ -99,8 +98,8 @@ export class AudioFormatReader_MPEG extends AudioFormatReader implements IAudioF
 
     private TimeBudget: number;
 
-    constructor(audio: AudioContext, logger: Logging, errorCallback: () => void, beforeDecodeCheck: (length: number) => boolean, dataReadyCallback: () => void, addId3Tag: boolean, minDecodeFrames: number) {
-        super(audio, logger, errorCallback, beforeDecodeCheck, dataReadyCallback);
+    constructor(audio: AudioContext, errorCallback: () => void, beforeDecodeCheck: (length: number) => boolean, dataReadyCallback: () => void, addId3Tag: boolean, minDecodeFrames: number) {
+        super(audio, errorCallback, beforeDecodeCheck, dataReadyCallback);
 
         this._OnDecodeSuccess = this.OnDecodeSuccess.bind(this);
         this._OnDecodeError = this.OnDecodeError.bind(this);

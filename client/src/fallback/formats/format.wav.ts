@@ -3,8 +3,7 @@
     https://github.com/JoJoBond/3LAS
 */
 
-import { Logging } from '../../util/3las.logging';
-import { AudioFormatReader, IAudioFormatReader } from '../3las.formatreader';
+import { AudioFormatReader, IAudioFormatReader } from './audioformatreader';
 
 export class AudioFormatReader_WAV extends AudioFormatReader implements IAudioFormatReader {
     private readonly BatchDuration: number;
@@ -48,8 +47,8 @@ export class AudioFormatReader_WAV extends AudioFormatReader implements IAudioFo
     private SampleBudget: number;
 
 
-    constructor(audio: AudioContext, logger: Logging, errorCallback: () => void, beforeDecodeCheck: (length: number) => boolean, dataReadyCallback: () => void, batchDuration: number, extraEdgeDuration: number) {
-        super(audio, logger, errorCallback, beforeDecodeCheck, dataReadyCallback);
+    constructor(audio: AudioContext, errorCallback: () => void, beforeDecodeCheck: (length: number) => boolean, dataReadyCallback: () => void, batchDuration: number, extraEdgeDuration: number) {
+        super(audio, errorCallback, beforeDecodeCheck, dataReadyCallback);
 
         this._OnDecodeSuccess = this.OnDecodeSuccess.bind(this);
         this._OnDecodeError = this.OnDecodeError.bind(this);

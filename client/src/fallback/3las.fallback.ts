@@ -4,13 +4,10 @@
 */
 
 import { Logging } from '../util/3las.logging';
-import { CreateAudioFormatReader } from './formats/3las.createformatreader';
-import { AudioFormatReader, IAudioFormatReader } from './3las.formatreader';
-import { LiveAudioPlayer } from './3las.liveaudioplayer';
+import { CreateAudioFormatReader, CanDecodeTypes } from './formats';
+import { IAudioFormatReader } from './formats/audioformatreader';
+import { LiveAudioPlayer, NewAudioContext } from './liveaudioplayer';
 import { OSName, BrowserName } from '../util/3las.helpers';
-
-declare class webkitAudioContext extends AudioContext { }
-declare class mozAudioContext extends AudioContext { }
 
 export class Fallback_Settings {
     public Formats: Array<{ Mime: string, Name: string }>;
@@ -48,17 +45,7 @@ export class Fallback {
         }
 
         // Create audio context
-        if (typeof AudioContext !== "undefined")
-            this.Audio = new AudioContext();
-        else if (typeof webkitAudioContext !== "undefined")
-            this.Audio = new webkitAudioContext();
-        else if (typeof mozAudioContext !== "undefined")
-            this.Audio = new mozAudioContext();
-        else {
-            this.Logger.Log('3LAS: Browser does not support "AudioContext".');
-            throw new Error();
-        }
-
+        this.Audio = NewAudioContext();
         this.Settings = settings;
 
         this.Logger.Log("Detected: " +
@@ -69,7 +56,7 @@ export class Fallback {
         this.SelectedFormatName = "";
 
         for (let i: number = 0; i < this.Settings.Formats.length; i++) {
-            if (!AudioFormatReader.CanDecodeTypes([this.Settings.Formats[i].Mime]))
+            if (!CanDecodeTypes([this.Settings.Formats[i].Mime]))
                 continue;
 
             this.SelectedFormatMime = this.Settings.Formats[i].Mime;
@@ -103,11 +90,9 @@ export class Fallback {
             this.FormatReader = CreateAudioFormatReader(
                 this.SelectedFormatMime,
                 this.Audio,
-                this.Logger,
                 this.OnReaderError.bind(this),
                 this.Player.CheckBeforeDecode,
-                this.OnReaderDataReady.bind(this),
-                AudioFormatReader.DefaultSettings()
+                this.OnReaderDataReady.bind(this)
             );
             this.Logger.Log("Init of AudioFormatReader succeeded");
         }
