@@ -1,5 +1,4 @@
 {
-    "RtcConfig" : null,
 	"FallbackFFmpegPath": "ffmpeg.exe",
     "FallbackUseMp3": true,
     "FallbackUseWav": true,

@@ -20,18 +20,11 @@ function Init(_ev: Event): void {
     if (typeof RtcConfig == 'undefined')
         RtcConfig = {};
 
-    settings.WebRTC.RtcConfig = RtcConfig;
-
     if (typeof SocketPort != 'undefined')
         settings.SocketPort = SocketPort;
 
     if (typeof SocketPath != 'undefined')
         settings.SocketPath = SocketPath;
-
-    if (typeof AudioTagId == 'undefined')
-        settings.WebRTC.AudioTag = null;
-    else
-        settings.WebRTC.AudioTag = <HTMLAudioElement>document.getElementById(AudioTagId);
 
     try {
         Stream = new _3LAS(logger, settings);

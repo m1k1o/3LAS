@@ -1,4 +1,3 @@
-import { WebRTC, WebRTC_Settings } from "./3las.webrtc";
 import { Fallback, Fallback_Settings } from "./fallback/3las.fallback";
 import { Logging } from "./util/3las.logging";
 import { WebSocketClient } from "./util/3las.websocketclient";
@@ -8,14 +7,12 @@ export class _3LAS_Settings {
     public SocketHost: string;
     public SocketPort: number;
     public SocketPath: string;
-    public WebRTC: WebRTC_Settings
     public Fallback: Fallback_Settings;
 
     constructor() {
         this.SocketHost = document.location.hostname ? document.location.hostname : "127.0.0.1";
         this.SocketPort = 8080;
         this.SocketPath = "/";
-        this.WebRTC = new WebRTC_Settings();
         this.Fallback = new Fallback_Settings();
     }
 }
@@ -30,7 +27,6 @@ export class _3LAS {
     private WebSocket: WebSocketClient;
     private ConnectivityFlag: boolean;
 
-    private readonly WebRTC: WebRTC;
     private readonly Fallback: Fallback;
     private readonly WakeLock: MyWakeLock;
 
@@ -43,28 +39,16 @@ export class _3LAS {
         this.Settings = settings;
 
         try {
-            this.WebRTC = new WebRTC(this.Logger, this.Settings.WebRTC);
-            this.WebRTC.ActivityCallback = this.OnActivity.bind(this);
-            this.WebRTC.DisconnectCallback = this.OnSocketDisconnect.bind(this);
+            this.Fallback = new Fallback(this.Logger, this.Settings.Fallback);
+            this.Fallback.ActivityCallback = this.OnActivity.bind(this);
         }
         catch
         {
-            this.WebRTC = null;
+            this.Fallback = null;
         }
 
-        if (this.WebRTC == null) {
-            try {
-                this.Fallback = new Fallback(this.Logger, this.Settings.Fallback);
-                this.Fallback.ActivityCallback = this.OnActivity.bind(this);
-            }
-            catch
-            {
-                this.Fallback = null;
-            }
-        }
-
-        if (this.WebRTC == null && this.Fallback == null) {
-            this.Logger.Log('3LAS: Browser does not support either media handling methods.');
+        if (this.Fallback == null) {
+            this.Logger.Log('3LAS: Browser does not support media handling methods.');
             throw new Error();
         }
 
@@ -74,32 +58,19 @@ export class _3LAS {
     }
 
     public set Volume(value: number) {
-        if (this.WebRTC)
-            this.WebRTC.Volume = value;
-        else
-            this.Fallback.Volume = value;
+        this.Fallback.Volume = value;
     }
 
     public get Volume(): number {
-        if (this.WebRTC)
-            return this.WebRTC.Volume;
-        else
-            return this.Fallback.Volume;
+        return this.Fallback.Volume;
     }
 
     public CanChangeVolume(): boolean {
-        if (this.WebRTC)
-            return this.WebRTC.CanChangeVolume();
-        else
-            return true;
+        return true;
     }
 
     public Start(): void {
         this.ConnectivityFlag = false;
-
-        // This is stupid, but required for iOS/iPadOS... thanks Apple :(
-        if (this.Settings && this.Settings.WebRTC && this.Settings.WebRTC.AudioTag)
-            this.Settings.WebRTC.AudioTag.play();
 
         // This is stupid, but required for Android.... thanks Google :(
         if (this.WakeLock)
@@ -138,40 +109,19 @@ export class _3LAS {
     // Callback function from socket connection
     private OnSocketError(message: string): void {
         this.Logger.Log("Network error: " + message);
-
-        if (this.WebRTC)
-            this.WebRTC.OnSocketError(message);
-        else
-            this.Fallback.OnSocketError(message);
+        this.Fallback.OnSocketError(message);
     }
 
     private OnSocketConnect(): void {
         this.Logger.Log("Established connection with server.");
-
-        if (this.WebRTC)
-            this.WebRTC.OnSocketConnect();
-        else
-            this.Fallback.OnSocketConnect();
-
-
-        if (this.WebRTC)
-            this.WebRTC.Init(this.WebSocket);
-        else
-            this.Fallback.Init(this.WebSocket);
+        this.Fallback.OnSocketConnect();
+        this.Fallback.Init(this.WebSocket);
     }
 
     private OnSocketDisconnect(): void {
         this.Logger.Log("Lost connection to server.");
-
-        if (this.WebRTC)
-            this.WebRTC.OnSocketDisconnect();
-        else
-            this.Fallback.OnSocketDisconnect();
-
-        if (this.WebRTC)
-            this.WebRTC.Reset();
-        else
-            this.Fallback.Reset();
+        this.Fallback.OnSocketDisconnect();
+        this.Fallback.Reset();
 
 
         if (this.ConnectivityFlag) {
@@ -185,9 +135,6 @@ export class _3LAS {
     }
 
     private OnSocketDataReady(data: ArrayBuffer | string): void {
-        if (this.WebRTC)
-            this.WebRTC.OnSocketDataReady(data);
-        else
-            this.Fallback.OnSocketDataReady(<ArrayBuffer>data);
+        this.Fallback.OnSocketDataReady(<ArrayBuffer>data);
     }
 }
