@@ -35,7 +35,6 @@ function Init(_ev: Event): void {
     }
 
     Stream.ConnectivityCallback = OnConnectivityCallback;
-    Stream.ActivityCallback = OnActivityCallback;
 
     document.getElementById("unmutebutton").onclick = OnUnmuteButtonClick;
     document.getElementById("mutebutton").onclick = OnMuteButtonClick;
@@ -93,20 +92,6 @@ function OnConnectivityCallback(isConnected: boolean): void {
         document.getElementById("redlightoff").style.visibility = "visible";
         document.getElementById("mutebutton").style.visibility = "hidden";
         document.getElementById("unmutebutton").style.visibility = "hidden";
-    }
-}
-
-function OnActivityCallback(): void {
-    let redlighton: HTMLElement = document.getElementById("redlighton");
-    let redlightoff: HTMLElement = document.getElementById("redlightoff");
-
-    if (redlightoff.style.visibility == "hidden") {
-        redlightoff.style.visibility = "visible";
-        redlighton.style.visibility = "hidden";
-    }
-    else {
-        redlightoff.style.visibility = "hidden";
-        redlighton.style.visibility = "visible";
     }
 }
 

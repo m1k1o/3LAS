@@ -10,7 +10,6 @@ declare class webkitWebSocket extends WebSocket { }
 declare class mozWebSocket extends WebSocket { }
 
 export class WebSocketClient {
-    private readonly Logger: Logging;
     private readonly Uri: string;
     private readonly ErrorCallback: (message: string) => void;
     private readonly ConnectCallback: () => void;
@@ -20,8 +19,7 @@ export class WebSocketClient {
     private IsConnected: boolean;
     private Socket: WebSocket;
 
-    constructor(logger: Logging, uri: string, errorCallback: (message: string) => void, connectCallback: () => void, dataReadyCallback: (data: ArrayBuffer) => void, disconnectCallback: () => void) {
-        this.Logger = logger;
+    constructor(uri: string, errorCallback: (message: string) => void, connectCallback: () => void, dataReadyCallback: (data: ArrayBuffer) => void, disconnectCallback: () => void) {
         this.Uri = uri;
 
         // Check callback argument

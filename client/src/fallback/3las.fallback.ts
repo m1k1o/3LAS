@@ -41,8 +41,6 @@ export class Fallback {
     private readonly SelectedFormatMime: string;
     private readonly SelectedFormatName: string;
 
-    public ActivityCallback: () => void;
-
     constructor(logger: Logging, settings: Fallback_Settings) {
         this.Logger = logger;
         if (!this.Logger) {
@@ -184,8 +182,6 @@ export class Fallback {
         this.PacketModCounter++;
 
         if (this.PacketModCounter > 100) {
-            if (this.ActivityCallback)
-                this.ActivityCallback();
             this.PacketModCounter = 0;
         }
 

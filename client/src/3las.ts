@@ -18,7 +18,6 @@ export class _3LAS_Settings {
 }
 
 export class _3LAS {
-    public ActivityCallback: () => void;
     public ConnectivityCallback: (status: boolean) => void;
 
     private readonly Logger: Logging;
@@ -40,7 +39,6 @@ export class _3LAS {
 
         try {
             this.Fallback = new Fallback(this.Logger, this.Settings.Fallback);
-            this.Fallback.ActivityCallback = this.OnActivity.bind(this);
         }
         catch
         {
@@ -78,7 +76,6 @@ export class _3LAS {
 
         try {
             this.WebSocket = new WebSocketClient(
-                this.Logger,
                 'ws://' + this.Settings.SocketHost + ':' + this.Settings.SocketPort.toString() + this.Settings.SocketPath,
                 this.OnSocketError.bind(this),
                 this.OnSocketConnect.bind(this),
@@ -91,18 +88,6 @@ export class _3LAS {
         catch (e) {
             this.Logger.Log("Init of WebSocketClient failed: " + e);
             throw new Error();
-        }
-    }
-
-    private OnActivity(): void {
-        if (this.ActivityCallback)
-            this.ActivityCallback();
-
-        if (!this.ConnectivityFlag) {
-            this.ConnectivityFlag = true;
-
-            if (this.ConnectivityCallback)
-                this.ConnectivityCallback(true);
         }
     }
 
@@ -119,6 +104,9 @@ export class _3LAS {
             "type": "fallback",
             "data": SelectedFormatName,
         }));
+
+        if (this.ConnectivityCallback)
+            this.ConnectivityCallback(true);
     }
 
     private OnSocketDisconnect(): void {
