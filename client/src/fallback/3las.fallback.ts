@@ -4,7 +4,6 @@
 */
 
 import { Logging } from '../util/3las.logging';
-import { WebSocketClient } from '../util/3las.websocketclient';
 import { CreateAudioFormatReader } from './formats/3las.createformatreader';
 import { AudioFormatReader, IAudioFormatReader } from './3las.formatreader';
 import { LiveAudioPlayer } from './3las.liveaudioplayer';
@@ -41,8 +40,6 @@ export class Fallback {
 
     private readonly SelectedFormatMime: string;
     private readonly SelectedFormatName: string;
-
-    private WebSocket: WebSocketClient;
 
     public ActivityCallback: () => void;
 
@@ -126,16 +123,10 @@ export class Fallback {
         this.FocusChecker = 0;
     }
 
-    public Init(webSocket: WebSocketClient): void {
+    public Init(): string {
         this.MobileUnmute();
-
-        this.WebSocket = webSocket;
-        this.WebSocket.Send(JSON.stringify({
-            "type": "fallback",
-            "data": this.SelectedFormatName
-        }));
-
         this.StartFocusChecker();
+        return this.SelectedFormatName
     }
 
     public MobileUnmute(): void {
@@ -188,16 +179,6 @@ export class Fallback {
         }
     }
 
-    // Callback function from socket connection
-    public OnSocketError(message: string): void {
-    }
-
-    public OnSocketConnect(): void {
-    }
-
-    public OnSocketDisconnect(): void {
-    }
-
     private PacketModCounter: number;
     public OnSocketDataReady(data: ArrayBuffer): void {
         this.PacketModCounter++;
@@ -246,7 +227,5 @@ export class Fallback {
 
         this.FormatReader.Reset();
         this.Player.Reset();
-
-        this.WebSocket = null;
     }
 }

@@ -109,18 +109,20 @@ export class _3LAS {
     // Callback function from socket connection
     private OnSocketError(message: string): void {
         this.Logger.Log("Network error: " + message);
-        this.Fallback.OnSocketError(message);
     }
 
     private OnSocketConnect(): void {
         this.Logger.Log("Established connection with server.");
-        this.Fallback.OnSocketConnect();
-        this.Fallback.Init(this.WebSocket);
+        let SelectedFormatName: string = this.Fallback.Init();
+
+        this.WebSocket.Send(JSON.stringify({
+            "type": "fallback",
+            "data": SelectedFormatName,
+        }));
     }
 
     private OnSocketDisconnect(): void {
         this.Logger.Log("Lost connection to server.");
-        this.Fallback.OnSocketDisconnect();
         this.Fallback.Reset();
 
 
