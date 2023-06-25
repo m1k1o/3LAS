@@ -132,6 +132,7 @@ export class AudioFormatReader_MPEG extends AudioFormatReader implements IAudioF
     protected ExtractAll(): void {
         // Look for frames
         this.FindFrame();
+
         // Repeat as long as we can extract frames
         while (this.CanExtractFrame()) {
             // Extract frame and push into array

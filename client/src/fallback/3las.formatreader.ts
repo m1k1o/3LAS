@@ -5,8 +5,6 @@
 
 import { Logging } from '../util/3las.logging';
 import { isAndroid } from '../util/3las.helpers';
-import { AudioFormatReader_MPEG } from './formats/3las.formatreader.mpeg';
-import { AudioFormatReader_WAV } from './formats/3las.formatreader.wav';
 
 export interface IAudioFormatReader {
     PushData(data: Uint8Array): void;

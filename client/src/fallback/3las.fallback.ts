@@ -16,8 +16,8 @@ declare class mozAudioContext extends AudioContext { }
 export class Fallback_Settings {
     public Formats: Array<{ Mime: string, Name: string }>;
     public MaxVolume: number;
-    public InitialBufferLength: number;
     public AutoCorrectSpeed: boolean;
+    public InitialBufferLength: number;
 
     constructor() {
         this.Formats = [
@@ -71,7 +71,7 @@ export class Fallback {
             (BrowserName == "IE" ? "Internet Explorer" : (BrowserName == "NativeChrome" ? "Chrome legacy" : (BrowserName == "Unknown" ? "Unknown Browser" : BrowserName))));
 
         this.SelectedFormatMime = "";
-        this.SelectedFormatName = "";AudioFormatReader
+        this.SelectedFormatName = "";
 
         for (let i: number = 0; i < this.Settings.Formats.length; i++) {
             if (!AudioFormatReader.CanDecodeTypes([this.Settings.Formats[i].Mime]))

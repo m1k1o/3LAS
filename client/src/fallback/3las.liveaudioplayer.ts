@@ -120,14 +120,14 @@ export class LiveAudioPlayer {
                 // Pass audio data to source
                 sourceNode.buffer = buffer;
 
-                //Connect the source to the gain node
+                // Connect the source to the gain node
                 sourceNode.connect(this.Amplification);
 
                 if (this.VariableSpeed) {
                     let scheduleOffset: number = this.NextScheduleTime - this.Audio.currentTime;
 
                     // Check if we are to far or too close to target schedule time
-                    if (this.NextScheduleTime - this.Audio.currentTime > this.OffsetMax) {
+                    if (scheduleOffset > this.OffsetMax) {
                         if (this.PlaybackSpeed < 1.0 + LiveAudioPlayer.SpeedCorrectionFactor) {
                             // We are too slow, speed up playback (somewhat noticeable)
 
@@ -136,7 +136,7 @@ export class LiveAudioPlayer {
                             duration = buffer.duration / this.PlaybackSpeed;
                         }
                     }
-                    else if (this.NextScheduleTime - this.Audio.currentTime < this.OffsetMin) {
+                    else if (scheduleOffset < this.OffsetMin) {
                         if (this.PlaybackSpeed > 1.0 - LiveAudioPlayer.SpeedCorrectionFactor) {
                             // We are too fast, slow down playback (somewhat noticeable)
 
@@ -147,8 +147,8 @@ export class LiveAudioPlayer {
                     }
                     else {
                         // Check if we are in time		
-                        if ((this.PlaybackSpeed > 1.0 && (this.NextScheduleTime - this.Audio.currentTime < this.StartOffset)) ||
-                            (this.PlaybackSpeed < 1.0 && (this.NextScheduleTime - this.Audio.currentTime > this.StartOffset))) {
+                        if ((this.PlaybackSpeed > 1.0 && (scheduleOffset < this.StartOffset)) ||
+                            (this.PlaybackSpeed < 1.0 && (scheduleOffset > this.StartOffset))) {
                             // We are within our min/max offset, set playpacks to default
 
                             this.Logger.Log("Buffer size within limits, using normal playback speed.");

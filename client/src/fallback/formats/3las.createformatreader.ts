@@ -10,7 +10,6 @@ export function CreateAudioFormatReader(mime: string, audio: AudioContext, logge
     if (!settings)
         settings = AudioFormatReader.DefaultSettings();
 
-    let fullMime: string = mime;
     if (mime.indexOf("audio/pcm") == 0)
         mime = "audio/pcm";
 
